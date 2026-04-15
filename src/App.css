@@ -1,0 +1,126 @@
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #1e1e1e;
+  color: #eee;
+  border-bottom: 1px solid #333;
+}
+
+.toolbar button {
+  background: #2d2d2d;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toolbar button:hover { background: #3a3a3a; }
+.toolbar button.active { background: #4a7cff; border-color: #4a7cff; }
+
+.mode-group { display: flex; gap: 4px; }
+
+.search { display: flex; gap: 4px; align-items: center; }
+.search input {
+  background: #2d2d2d;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 6px 10px;
+  border-radius: 4px;
+  width: 220px;
+  outline: none;
+}
+.search input:focus { border-color: #4a7cff; }
+.search .notfound { color: #ff6b6b; font-size: 12px; }
+
+.stats {
+  margin-left: auto;
+  display: flex;
+  gap: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 260px;
+  background: #252525;
+  color: #eee;
+  padding: 12px;
+  overflow-y: auto;
+  border-right: 1px solid #333;
+}
+
+.sidebar h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; opacity: 0.7; }
+
+.day-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+
+.day-row:hover { background: #2f2f2f; }
+.day-row.active { background: #2f2f4a; border-color: #4a7cff; }
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.day-row input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: #eee;
+  font-size: 14px;
+  outline: none;
+}
+
+.day-row input:focus { background: #1a1a1a; padding: 2px 4px; border-radius: 2px; }
+
+.km {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.day-row button {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.day-row button:hover { color: #ff6b6b; }
+
+.map-wrap { flex: 1; min-width: 0; }

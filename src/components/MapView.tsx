@@ -15,6 +15,7 @@ type Props = {
   fitBounds: Point[] | null;
   selectedPointIndex: number | null;
   onAddPoint: (p: Point) => void;
+  onSnapClick: (p: Point) => void;
   onMovePoint: (dayIndex: number, pointIndex: number, p: Point) => void;
   onDeletePoint: (dayIndex: number, pointIndex: number) => void;
   onSelectPoint: (pointIndex: number) => void;
@@ -46,15 +47,19 @@ function FitBoundsHandler({ points }: { points: Point[] | null }) {
 function ClickHandler({
   mode,
   onAdd,
+  onSnap,
   onBackgroundClick,
 }: {
   mode: Mode;
   onAdd: (p: Point) => void;
+  onSnap: (p: Point) => void;
   onBackgroundClick: () => void;
 }) {
   useMapEvents({
     click(e) {
-      if (mode === 'add') onAdd([e.latlng.lat, e.latlng.lng]);
+      const p: Point = [e.latlng.lat, e.latlng.lng];
+      if (mode === 'freestyle') onAdd(p);
+      else if (mode === 'snap') onSnap(p);
       else onBackgroundClick();
     },
   });
@@ -70,6 +75,7 @@ export function MapView({
   fitBounds,
   selectedPointIndex,
   onAddPoint,
+  onSnapClick,
   onMovePoint,
   onDeletePoint,
   onSelectPoint,
@@ -93,7 +99,12 @@ export function MapView({
       )}
       <FlyToHandler target={flyTo} />
       <FitBoundsHandler points={fitBounds} />
-      <ClickHandler mode={mode} onAdd={onAddPoint} onBackgroundClick={onBackgroundClick} />
+      <ClickHandler
+        mode={mode}
+        onAdd={onAddPoint}
+        onSnap={onSnapClick}
+        onBackgroundClick={onBackgroundClick}
+      />
       {days.map((d, di) => (
         <Polyline
           key={`line-${di}`}

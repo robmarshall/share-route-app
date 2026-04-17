@@ -2,7 +2,7 @@ import { useReducer, useCallback } from 'react';
 
 export type Point = [number, number];
 export type Day = { name: string; points: Point[] };
-export type Mode = 'add' | 'edit' | 'delete';
+export type Mode = 'freestyle' | 'snap' | 'edit' | 'delete';
 
 export type RouteState = {
   days: Day[];
@@ -18,6 +18,7 @@ type Action =
   | { type: 'renameDay'; index: number; name: string }
   | { type: 'setActive'; index: number }
   | { type: 'addPoint'; point: Point }
+  | { type: 'extendPoints'; dayIndex: number; points: Point[] }
   | { type: 'movePoint'; dayIndex: number; pointIndex: number; point: Point }
   | { type: 'deletePoint'; dayIndex: number; pointIndex: number }
   | { type: 'commitDrag'; snapshot: Day[] }
@@ -70,6 +71,15 @@ function reducer(state: RouteState, action: Action): RouteState {
       );
       return { ...state, days, ...pushHistory(state) };
     }
+    case 'extendPoints': {
+      if (action.points.length === 0) return state;
+      const days = state.days.map((d, i) => {
+        if (i !== action.dayIndex) return d;
+        const base = d.points.length > 0 ? d.points.slice(0, -1) : [];
+        return { ...d, points: [...base, ...action.points] };
+      });
+      return { ...state, days, ...pushHistory(state) };
+    }
     case 'movePoint': {
       const days = state.days.map((d, i) =>
         i === action.dayIndex
@@ -114,6 +124,11 @@ export function useRouteStore() {
     renameDay: useCallback((index: number, name: string) => dispatch({ type: 'renameDay', index, name }), []),
     setActive: useCallback((index: number) => dispatch({ type: 'setActive', index }), []),
     addPoint: useCallback((point: Point) => dispatch({ type: 'addPoint', point }), []),
+    extendPoints: useCallback(
+      (dayIndex: number, points: Point[]) =>
+        dispatch({ type: 'extendPoints', dayIndex, points }),
+      [],
+    ),
     movePoint: useCallback(
       (dayIndex: number, pointIndex: number, point: Point) =>
         dispatch({ type: 'movePoint', dayIndex, pointIndex, point }),

@@ -10,12 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@mapbox/polyline": "^1.2.1",
     "@turf/helpers": "^7.3.4",
     "@turf/length": "^7.3.4",
     "leaflet": "^1.9.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-hot-toast": "^2.6.0",
     "react-leaflet": "^5.0.0",
     "simplify-js": "^1.2.4"
   },

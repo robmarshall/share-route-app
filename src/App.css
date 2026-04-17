@@ -42,6 +42,20 @@ html, body, #root {
 
 .mode-group { display: flex; gap: 4px; }
 
+.toolbar button.icon-btn {
+  padding: 8px;
+  min-width: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar .icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
 .menu-btn { display: none; }
 
 .search { display: flex; gap: 4px; align-items: center; }

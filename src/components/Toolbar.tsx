@@ -1,4 +1,15 @@
 import { useState } from 'react';
+import {
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  Bars3Icon,
+  MapIcon,
+  GlobeAltIcon,
+  PencilIcon,
+  LinkIcon,
+  HandRaisedIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
 import type { Mode } from '../state/routeStore';
 import type { Basemap } from './MapView';
 import { geocode } from '../lib/geocode';
@@ -20,6 +31,13 @@ type Props = {
   canRedo: boolean;
 };
 
+const MODE_BUTTONS: Array<{ mode: Mode; label: string; Icon: typeof PencilIcon }> = [
+  { mode: 'freestyle', label: 'Freestyle — click to drop points', Icon: PencilIcon },
+  { mode: 'snap', label: 'Snap — route between points along roads', Icon: LinkIcon },
+  { mode: 'edit', label: 'Edit — drag points to move', Icon: HandRaisedIcon },
+  { mode: 'delete', label: 'Delete — click a point to remove', Icon: TrashIcon },
+];
+
 export function Toolbar({
   mode,
   setMode,
@@ -35,7 +53,6 @@ export function Toolbar({
   canUndo,
   canRedo,
 }: Props) {
-  const modes: Mode[] = ['add', 'edit', 'delete'];
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'notfound'>('idle');
 
@@ -54,41 +71,67 @@ export function Toolbar({
 
   return (
     <div className="toolbar">
-      <button className="menu-btn" onClick={onToggleSidebar} aria-label="Show days">
-        ☰
+      <button
+        className="menu-btn icon-btn"
+        onClick={onToggleSidebar}
+        aria-label="Show days"
+        title="Days"
+      >
+        <Bars3Icon className="icon" />
       </button>
       <div className="mode-group">
-        <button onClick={onUndo} disabled={!canUndo} aria-label="Undo" title="Undo (Ctrl+Z)">
-          ↶
+        <button
+          className="icon-btn"
+          onClick={onUndo}
+          disabled={!canUndo}
+          aria-label="Undo"
+          title="Undo (Ctrl+Z)"
+        >
+          <ArrowUturnLeftIcon className="icon" />
         </button>
-        <button onClick={onRedo} disabled={!canRedo} aria-label="Redo" title="Redo (Ctrl+Shift+Z)">
-          ↷
+        <button
+          className="icon-btn"
+          onClick={onRedo}
+          disabled={!canRedo}
+          aria-label="Redo"
+          title="Redo (Ctrl+Shift+Z)"
+        >
+          <ArrowUturnRightIcon className="icon" />
         </button>
       </div>
       <button onClick={onAddDay}>+ Day</button>
       <div className="mode-group">
-        {modes.map((m) => (
+        {MODE_BUTTONS.map(({ mode: m, label, Icon }) => (
           <button
             key={m}
-            className={mode === m ? 'active' : ''}
+            className={`icon-btn${mode === m ? ' active' : ''}`}
             onClick={() => setMode(m)}
+            aria-label={label}
+            aria-pressed={mode === m}
+            title={label}
           >
-            {m[0].toUpperCase() + m.slice(1)}
+            <Icon className="icon" />
           </button>
         ))}
       </div>
       <div className="mode-group">
         <button
-          className={basemap === 'street' ? 'active' : ''}
+          className={`icon-btn${basemap === 'street' ? ' active' : ''}`}
           onClick={() => setBasemap('street')}
+          aria-label="Street map"
+          aria-pressed={basemap === 'street'}
+          title="Street map"
         >
-          Map
+          <MapIcon className="icon" />
         </button>
         <button
-          className={basemap === 'satellite' ? 'active' : ''}
+          className={`icon-btn${basemap === 'satellite' ? ' active' : ''}`}
           onClick={() => setBasemap('satellite')}
+          aria-label="Satellite"
+          aria-pressed={basemap === 'satellite'}
+          title="Satellite"
         >
-          Satellite
+          <GlobeAltIcon className="icon" />
         </button>
       </div>
       <form className="search" onSubmit={submit}>

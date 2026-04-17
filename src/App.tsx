@@ -1,7 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import { useRouteStore, type Mode, type Point, type Day } from './state/routeStore';
 import { useUrlSync } from './state/urlSync';
 import { dayDistanceKm } from './lib/distance';
+import { snapRoute } from './lib/routing';
 import { Toolbar } from './components/Toolbar';
 import { DaySidebar } from './components/DaySidebar';
 import { MapView, type Basemap } from './components/MapView';
@@ -9,7 +11,7 @@ import './App.css';
 
 export default function App() {
   const { state, actions, canUndo, canRedo } = useRouteStore();
-  const [mode, setMode] = useState<Mode>('add');
+  const [mode, setMode] = useState<Mode>('freestyle');
   const [basemap, setBasemap] = useState<Basemap>('street');
   const [flyTo, setFlyTo] = useState<{ center: Point; zoom: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<Point[] | null>(null);
@@ -21,6 +23,7 @@ export default function App() {
     daysRef.current = state.days;
   }, [state.days]);
   const dragSnapshotRef = useRef<Day[] | null>(null);
+  const snappingRef = useRef(false);
 
   const urlSize = useUrlSync(state.days, (loaded) => {
     actions.setDays(loaded);
@@ -62,6 +65,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <Toaster position="top-center" toastOptions={{ style: { fontSize: 14 } }} />
       <Toolbar
         mode={mode}
         setMode={setMode}
@@ -107,6 +111,37 @@ export default function App() {
               const newIndex = daysRef.current[state.activeDayIndex]?.points.length ?? 0;
               actions.addPoint(p);
               setSelectedPointIndex(newIndex);
+            }}
+            onSnapClick={async (p) => {
+              if (snappingRef.current) return;
+              const dayIndex = state.activeDayIndex;
+              const existing = daysRef.current[dayIndex]?.points ?? [];
+              if (existing.length === 0) {
+                actions.addPoint(p);
+                setSelectedPointIndex(0);
+                return;
+              }
+              const from = existing[existing.length - 1];
+              snappingRef.current = true;
+              const loadingId = toast.loading('Snapping to road…');
+              try {
+                const result = await snapRoute(from, p);
+                if (!result.ok) {
+                  toast.error(
+                    result.reason === 'no-road'
+                      ? "Can't snap — no road within range. Switch to Freestyle to drop a point here."
+                      : 'Routing service unavailable. Try again or use Freestyle.',
+                    { id: loadingId, duration: 5000 },
+                  );
+                  return;
+                }
+                toast.dismiss(loadingId);
+                actions.extendPoints(dayIndex, result.points);
+                const newLen = (existing.length - 1) + result.points.length;
+                setSelectedPointIndex(newLen - 1);
+              } finally {
+                snappingRef.current = false;
+              }
             }}
             onMovePoint={actions.movePoint}
             onDeletePoint={(dayIndex, pointIndex) => {

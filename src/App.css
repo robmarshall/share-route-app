@@ -37,6 +37,8 @@ html, body, #root {
 
 .toolbar button:hover { background: #3a3a3a; }
 .toolbar button.active { background: #4a7cff; border-color: #4a7cff; }
+.toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
+.toolbar button:disabled:hover { background: #2d2d2d; }
 
 .mode-group { display: flex; gap: 4px; }
 

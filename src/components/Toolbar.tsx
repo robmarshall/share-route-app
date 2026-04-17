@@ -14,6 +14,10 @@ type Props = {
   urlSize: number;
   totalKm: number;
   onToggleSidebar: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 };
 
 export function Toolbar({
@@ -26,6 +30,10 @@ export function Toolbar({
   urlSize,
   totalKm,
   onToggleSidebar,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }: Props) {
   const modes: Mode[] = ['add', 'edit', 'delete'];
   const [query, setQuery] = useState('');
@@ -49,6 +57,14 @@ export function Toolbar({
       <button className="menu-btn" onClick={onToggleSidebar} aria-label="Show days">
         ☰
       </button>
+      <div className="mode-group">
+        <button onClick={onUndo} disabled={!canUndo} aria-label="Undo" title="Undo (Ctrl+Z)">
+          ↶
+        </button>
+        <button onClick={onRedo} disabled={!canRedo} aria-label="Redo" title="Redo (Ctrl+Shift+Z)">
+          ↷
+        </button>
+      </div>
       <button onClick={onAddDay}>+ Day</button>
       <div className="mode-group">
         {modes.map((m) => (

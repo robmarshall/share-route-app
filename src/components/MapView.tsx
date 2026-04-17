@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMap, useMapEvents } from 'react-leaflet';
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import type { Day, Mode, Point } from '../state/routeStore';
 import { colorForDay } from '../lib/colors';
 import 'leaflet/dist/leaflet.css';
@@ -13,9 +13,14 @@ type Props = {
   basemap: Basemap;
   flyTo: { center: Point; zoom: number } | null;
   fitBounds: Point[] | null;
+  selectedPointIndex: number | null;
   onAddPoint: (p: Point) => void;
   onMovePoint: (dayIndex: number, pointIndex: number, p: Point) => void;
   onDeletePoint: (dayIndex: number, pointIndex: number) => void;
+  onSelectPoint: (pointIndex: number) => void;
+  onBackgroundClick: () => void;
+  onBeginDrag: () => void;
+  onCommitDrag: () => void;
 };
 
 function FlyToHandler({ target }: { target: Props['flyTo'] }) {
@@ -38,16 +43,40 @@ function FitBoundsHandler({ points }: { points: Point[] | null }) {
   return null;
 }
 
-function ClickHandler({ mode, onAdd }: { mode: Mode; onAdd: (p: Point) => void }) {
+function ClickHandler({
+  mode,
+  onAdd,
+  onBackgroundClick,
+}: {
+  mode: Mode;
+  onAdd: (p: Point) => void;
+  onBackgroundClick: () => void;
+}) {
   useMapEvents({
     click(e) {
       if (mode === 'add') onAdd([e.latlng.lat, e.latlng.lng]);
+      else onBackgroundClick();
     },
   });
   return null;
 }
 
-export function MapView({ days, activeDayIndex, mode, basemap, flyTo, fitBounds, onAddPoint, onMovePoint, onDeletePoint }: Props) {
+export function MapView({
+  days,
+  activeDayIndex,
+  mode,
+  basemap,
+  flyTo,
+  fitBounds,
+  selectedPointIndex,
+  onAddPoint,
+  onMovePoint,
+  onDeletePoint,
+  onSelectPoint,
+  onBackgroundClick,
+  onBeginDrag,
+  onCommitDrag,
+}: Props) {
   return (
     <MapContainer center={[51.5074, -0.1278]} zoom={11} style={{ height: '100%', width: '100%' }}>
       {basemap === 'street' ? (
@@ -64,7 +93,7 @@ export function MapView({ days, activeDayIndex, mode, basemap, flyTo, fitBounds,
       )}
       <FlyToHandler target={flyTo} />
       <FitBoundsHandler points={fitBounds} />
-      <ClickHandler mode={mode} onAdd={onAddPoint} />
+      <ClickHandler mode={mode} onAdd={onAddPoint} onBackgroundClick={onBackgroundClick} />
       {days.map((d, di) => (
         <Polyline
           key={`line-${di}`}
@@ -76,37 +105,58 @@ export function MapView({ days, activeDayIndex, mode, basemap, flyTo, fitBounds,
           }}
         />
       ))}
-      {days[activeDayIndex]?.points.map((p, pi) => (
-        <CircleMarker
-          key={`m-${activeDayIndex}-${pi}`}
-          center={p}
-          radius={6}
-          pathOptions={{ color: colorForDay(activeDayIndex), fillColor: '#fff', fillOpacity: 1, weight: 2 }}
-          eventHandlers={{
-            click(e) {
-              if (mode === 'delete') {
-                e.originalEvent.stopPropagation();
-                onDeletePoint(activeDayIndex, pi);
-              }
-            },
-            mousedown(e) {
-              if (mode !== 'edit') return;
-              const map = e.target._map;
-              map.dragging.disable();
-              const move = (ev: any) => {
-                onMovePoint(activeDayIndex, pi, [ev.latlng.lat, ev.latlng.lng]);
-              };
-              const up = () => {
-                map.off('mousemove', move);
-                map.off('mouseup', up);
-                map.dragging.enable();
-              };
-              map.on('mousemove', move);
-              map.on('mouseup', up);
-            },
-          }}
-        />
-      ))}
+      {days[activeDayIndex]?.points.map((p, pi) => {
+        const selected = pi === selectedPointIndex;
+        const color = colorForDay(activeDayIndex);
+        return (
+          <Fragment key={`m-${activeDayIndex}-${pi}`}>
+            <CircleMarker
+              center={p}
+              radius={selected ? 9 : 6}
+              interactive={false}
+              pathOptions={{
+                color,
+                fillColor: selected ? color : '#fff',
+                fillOpacity: 1,
+                weight: selected ? 3 : 2,
+              }}
+            />
+            <CircleMarker
+              center={p}
+              radius={16}
+              pathOptions={{ opacity: 0, fillOpacity: 0, stroke: false }}
+              eventHandlers={{
+                click(e) {
+                  e.originalEvent.stopPropagation();
+                  if (mode === 'delete') {
+                    onDeletePoint(activeDayIndex, pi);
+                  } else {
+                    onSelectPoint(pi);
+                  }
+                },
+                mousedown(e) {
+                  if (mode !== 'edit') return;
+                  onSelectPoint(pi);
+                  onBeginDrag();
+                  const map = e.target._map;
+                  map.dragging.disable();
+                  const move = (ev: any) => {
+                    onMovePoint(activeDayIndex, pi, [ev.latlng.lat, ev.latlng.lng]);
+                  };
+                  const up = () => {
+                    map.off('mousemove', move);
+                    map.off('mouseup', up);
+                    map.dragging.enable();
+                    onCommitDrag();
+                  };
+                  map.on('mousemove', move);
+                  map.on('mouseup', up);
+                },
+              }}
+            />
+          </Fragment>
+        );
+      })}
     </MapContainer>
   );
 }

@@ -13,6 +13,7 @@ export default function App() {
   const [basemap, setBasemap] = useState<Basemap>('street');
   const [flyTo, setFlyTo] = useState<{ center: Point; zoom: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<Point[] | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const urlSize = useUrlSync(state.days, (loaded) => {
     actions.setDays(loaded);
     const first = loaded[0];
@@ -35,15 +36,24 @@ export default function App() {
         onGeocoded={(r) => setFlyTo({ center: r.center, zoom: r.zoom })}
         urlSize={urlSize}
         totalKm={totalKm}
+        onToggleSidebar={() => setSidebarOpen((v) => !v)}
       />
       <div className="main">
         <DaySidebar
           days={state.days}
           activeDayIndex={state.activeDayIndex}
-          setActive={actions.setActive}
+          setActive={(i) => {
+            actions.setActive(i);
+            setSidebarOpen(false);
+          }}
           renameDay={actions.renameDay}
           deleteDay={actions.deleteDay}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
+        {sidebarOpen && (
+          <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
+        )}
         <div className="map-wrap">
           <MapView
             days={state.days}

@@ -8,12 +8,19 @@ type Props = {
   setActive: (i: number) => void;
   renameDay: (i: number, name: string) => void;
   deleteDay: (i: number) => void;
+  open: boolean;
+  onClose: () => void;
 };
 
-export function DaySidebar({ days, activeDayIndex, setActive, renameDay, deleteDay }: Props) {
+export function DaySidebar({ days, activeDayIndex, setActive, renameDay, deleteDay, open, onClose }: Props) {
   return (
-    <div className="sidebar">
-      <h3>Days</h3>
+    <div className={`sidebar ${open ? 'open' : ''}`}>
+      <div className="sidebar-header">
+        <h3>Days</h3>
+        <button className="sidebar-close" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+      </div>
       {days.map((d, i) => {
         const km = dayDistanceKm(d.points);
         const active = i === activeDayIndex;

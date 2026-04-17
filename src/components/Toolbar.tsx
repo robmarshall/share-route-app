@@ -13,9 +13,20 @@ type Props = {
   onGeocoded: (r: GeocodeResult) => void;
   urlSize: number;
   totalKm: number;
+  onToggleSidebar: () => void;
 };
 
-export function Toolbar({ mode, setMode, basemap, setBasemap, onAddDay, onGeocoded, urlSize, totalKm }: Props) {
+export function Toolbar({
+  mode,
+  setMode,
+  basemap,
+  setBasemap,
+  onAddDay,
+  onGeocoded,
+  urlSize,
+  totalKm,
+  onToggleSidebar,
+}: Props) {
   const modes: Mode[] = ['add', 'edit', 'delete'];
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'notfound'>('idle');
@@ -35,7 +46,10 @@ export function Toolbar({ mode, setMode, basemap, setBasemap, onAddDay, onGeocod
 
   return (
     <div className="toolbar">
-      <button onClick={onAddDay}>+ Add Day</button>
+      <button className="menu-btn" onClick={onToggleSidebar} aria-label="Show days">
+        ☰
+      </button>
+      <button onClick={onAddDay}>+ Day</button>
       <div className="mode-group">
         {modes.map((m) => (
           <button
@@ -76,7 +90,7 @@ export function Toolbar({ mode, setMode, basemap, setBasemap, onAddDay, onGeocod
         {status === 'notfound' && <span className="notfound">not found</span>}
       </form>
       <div className="stats">
-        <span>URL: {(urlSize / 1024).toFixed(2)} KB</span>
+        <span className="url-size">URL: {(urlSize / 1024).toFixed(2)} KB</span>
         <span>Total: {totalKm.toFixed(2)} km</span>
       </div>
     </div>

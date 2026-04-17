@@ -1,3 +1,4 @@
+import simplify from 'simplify-js';
 import type { Point } from '../state/routeStore';
 
 export type SnapResult =
@@ -7,6 +8,7 @@ export type SnapResult =
 const OSRM_BASE = 'https://router.project-osrm.org/route/v1/driving';
 
 export const SNAP_RADIUS_M = 50;
+const SIMPLIFY_TOLERANCE_DEG = 0.00015;
 
 export async function snapRoute(
   from: Point,
@@ -36,8 +38,11 @@ export async function snapRoute(
   if (data.code !== 'Ok' || !data.routes?.length) {
     return { ok: false, reason: 'no-road' };
   }
-  const points: Point[] = data.routes[0].geometry.coordinates.map(
-    ([lng, lat]) => [lat, lng] as Point,
-  );
+  const planar = data.routes[0].geometry.coordinates.map(([lng, lat]) => ({
+    x: lng,
+    y: lat,
+  }));
+  const simplified = simplify(planar, SIMPLIFY_TOLERANCE_DEG, true);
+  const points: Point[] = simplified.map(({ x, y }) => [y, x] as Point);
   return { ok: true, points };
 }
